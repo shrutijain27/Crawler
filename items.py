@@ -13,8 +13,6 @@ class CrawlingItem(scrapy.Item):
     offer=scrapy.Field()
     image=scrapy.Field()
     standard_url=scrapy.Field()
-    processor=scrapy.Field()
-    ram=scrapy.Field()
-    hdd=scrapy.Field()
+
     
    
