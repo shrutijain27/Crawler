@@ -58,12 +58,11 @@ class FlipkartSpider(BaseSpider):
                 title.select(
                     ".//div[contains(@class,'pu-title')]/a/@href")[0].extract()
             # return items
-            #request method calls the new_feature() with current url
             request = Request(
                 item['standard_url'], callback=self.new_features)
             request.meta['item'] = item
-            items.append(item) #add item to items list
-        return items
+            items.append(item)            
+            yield request
 
     def new_features(self,response):
         item = response.meta["item"]
@@ -72,4 +71,4 @@ class FlipkartSpider(BaseSpider):
         for block in blocks:
             #item = TutorialItem()
             item['included_software'] = block.select(".//tbody/tr/td[contains(@class,'specValue')]/text()").extract()
-        yield item
+            yield item
