@@ -68,11 +68,12 @@ class FlipkartSpider(BaseSpider):
     def new_features(self,response):
         item = response.meta["item"]
         hxs = Selector(response)
-        
-        
+      
         rows = hxs.xpath("//div[contains(@class,'productSpecs')]/table/tr")
         item['included_software']=str(rows.xpath("td[.='Included Software']/following-sibling::td[1]/text()").extract())
         item['ram']=str(rows.xpath("td[.='System Memory']/following-sibling::td[1]/text()").extract())
-        #item['ram']=rows.xpath("/td[text()='Included Software']").extract()
+        item['Brand'] = str(rows.xpath("td[.='Brand']/following-sibling::td[1]/text()").extract())
+        item['PartNumber'] = str(rows.xpath("td[.='Part Number']/following-sibling::td[1]/text()").extract())
+        item['ModelId'] = str(rows.xpath("td[.='Model ID']/following-sibling::td[1]/text()").extract())
         return item
   
