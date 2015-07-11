@@ -13,6 +13,8 @@ class CrawlingItem(scrapy.Item):
     offer=scrapy.Field()
     image=scrapy.Field()
     standard_url=scrapy.Field()
+    Brand = scrapy.Field()
+    PartNumber = scrapy.Field()
+    ModelId = scrapy.Field()
 
-    
    
