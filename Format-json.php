@@ -19,11 +19,6 @@
     $json_array = json_decode( $json_data, True);
 
     for($element=0;$element< count($json_array);$element++) {
-
-        $val = array();
-        $index = val;
-        $val[$index] = value_from_file;
-
         $json_array[$element] = array("index"=>array("_id"=>$json_array[$element]['model_id'],"_type"=>'data'))
                                 + $json_array[$element];
 
