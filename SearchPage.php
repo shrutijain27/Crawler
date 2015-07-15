@@ -6,77 +6,109 @@
  * Send corresponding partNumber field to Details page of url clicked
  * call details page
  */
-include "Utils.php";
-include "SearchPage-view.php";
+
+include "template.php";
 require_once 'init.php';
 
-if(isset($_GET['q']) )
+ini_set("display_errors", "0");
+error_reporting(E_ALL);
+
+
+if( true )
 {
-    $q = $_GET['q'];
+    $filters = array();                 //filter array
+    $queryString = array();             //querystring array
+    if(!empty ($_GET['Searchbox'])){    //search box input
 
-    $params['index'] = 'index_elastic';
+    $search_keyword = $_GET['Searchbox'];
+    $queryString['bool']['must']['query_string'] = array('default_field'=>'model','query'=>$search_keyword);
+
+    }
+
+    if(!empty($_GET['brand'])){
+// Loop to store  values of individual checked checkbox.
+
+        $brands = array();
+        foreach($_GET['brand'] as $selected_brand){
+            $brands[] = $selected_brand;
+
+        }
+
+        $filters['bool']['must'][]['terms']['brand'] = $brands;     //filter
+
+
+    }
+    if(!empty($_GET['ram'])){
+// Loop to store  values of individual checked checkbox.
+        $ram_features = array();
+        foreach($_GET['ram'] as $selected_ram){
+            $ram_features[] = $selected_ram;
+
+        }
+        $filters['bool']['must'][]['terms']['ram'] = $ram_features;
+
+    }
+
+    if(!empty($_GET['Price'])){
+// Loop to store  values of individual checked checkbox.
+
+        $price_features = explode("-",$_GET['Price']);
+        $min_price = $price_features[0];
+        $max_price = $price_features[1];
+        $filters['bool']['must'][]['range']['offer']= array("from"=>$min_price,"to"=>$max_price);
+    }
+
+    $params['index'] = 'laptopindex';
     $params['type']  = 'data';
+    $params['from'] ='0';
+    $params['size'] ='20';
 
-    $filters = array();
-    /*
-    $x = array();
-    $x[]['should']['term']['ram'] = '2gb';
-    $x[]['should']['term'][]
-    */
-    $filters['bool']['should']['term']['model'] = $q;
 
-   //$filters['bool']['should']['bool'] = $x;
+    if(count($filters) > 0 || count($queryString) > 0 ){ // hit query only when get values
+        $final_Query = array();
+        $final_Query['filtered'] = array(
+            "filter" => $filters,
+            "query" => $queryString
+        );
 
-    $myQuery = array();
-    $myQuery['filtered'] = array(
-        "filter" => $filters
-    );
+        $params['body'] = array(
+            'query' => $final_Query
+        );
+        $query_results  = $es->search($params);
+    }
 
-    $params['body'] = array(
-        'query' => $myQuery
-    );
 
-    $query  = $es->search($params);                         //call search() in elasticsearch
-
-    if($query['hits']['total'] >1)                         //store results of query in $results
+    if($query_results['hits']['total']>=1)                //store results of query in $results
     {
-        $results = $query['hits']['hits'];
+        $results = $query_results['hits']['hits'];
+    }
+    else
+    {
+        echo(" No matching results ");
     }
 
 }
+
 ?>
-
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Elastic Search |es </title>
-</head>
-
-
-<body>
 
 <?php
 if(isset($results)){
  ?>
-    <div class="results" style=" width: 1000px ;height:1000px ;" >
+    <div class="results" style=" width: 85% ;height:100px ; padding-left: 0px; padding-top:0;float: left;" >
  <?php
     foreach($results as $r){
 ?>
 
+        <div class="inner" style="height: 200px ;width: 200px ;float:left; padding-top: 20px
+                    ;padding-left: 20px; padding-bottom: 60px; ">
 
-
-        <div class="inner" style=" height: 150px ;width: 150px ;float:right; padding-top: 20px
-                    ;padding-left: 20px; padding-bottom: 60px;   ">
-               
-                
                <div class="image-div">
-                <img src = "<?php echo  $r['_source']['image'][0] ?> "/>
+                <img src = "<?php echo  $r['_source']['image'] ?> "/>
                 </div>
-                <div class="Offer"><?php echo $r['_source']['offer'][0] ; ?></div>
+                <div class="Offer"><?php echo $r['_source']['offer'] ; ?></div>
                 <div>
-                <a href="GetProduct_Details.php?id=<?php $a = Utils::TrimData($r['_source']['ModelId']);
-                echo $a; ?>"><?php echo $r['_source']['model'][0]; ?></a>
+                <a href="GetProduct_Details.php?id=<?php echo $r['_source']['model_id'];
+                ?>"><?php echo $r['_source']['model']; ?></a>
                 </div>
             </div>
 
@@ -89,7 +121,4 @@ if(isset($results)){
 <?php
 }
 ?>
-
-</body>
-</html>
-
+</div>
