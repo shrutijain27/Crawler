@@ -1,11 +1,34 @@
+
 <?php
 
-/*
- * Search ElasticDb
- * Display initial data
- * Send corresponding partNumber field to Details page of url clicked
- * call details page
- */
+session_start();
+
+$search_id = uniqid();
+$array_values = array();
+$array_values = $_GET;
+
+$_SESSION['search_id']
+
+//$_SESSION['searchbox'] = $_GET['Searchbox'];
+//foreach($_GET['brand'] as $selected_brand){
+//    $brands[] = $selected_brand;
+//
+//}
+//$_SESSION['brand']=$brand;
+//
+//foreach($_GET['ram'] as $selected_ram){
+//    $ram_features[] = $selected_ram;
+//
+//}
+//$_SESSION['ram'] =$ram_features;
+//
+//$_SESSION['price'] = $_GET['Price'];
+
+
+
+
+
+
 
 include "template.php";
 require_once 'init.php';
@@ -14,14 +37,18 @@ ini_set("display_errors", "0");
 error_reporting(E_ALL);
 
 
+
+
+// if something set
 if( true )
 {
     $filters = array();                 //filter array
     $queryString = array();             //querystring array
     if(!empty ($_GET['Searchbox'])){    //search box input
 
-    $search_keyword = $_GET['Searchbox'];
-    $queryString['bool']['must']['query_string'] = array('default_field'=>'model','query'=>$search_keyword);
+        $search_keyword = $_GET['Searchbox'];
+        $queryString['bool']['must']['query_string'] = array('default_field'=>'model','query'=>$search_keyword);
+
 
     }
 
@@ -31,6 +58,7 @@ if( true )
         $brands = array();
         foreach($_GET['brand'] as $selected_brand){
             $brands[] = $selected_brand;
+
 
         }
 
@@ -71,10 +99,17 @@ if( true )
             "query" => $queryString
         );
 
+        //facets for unique value selection
+//        $facet['ram']['terms'] = array("field"=>"ram", "all_terms"=>true,"order"=>"term");
+//        $facet['brand']['terms'] = array("field"=>"brand", "all_terms"=>true,"order"=>"term");
+
         $params['body'] = array(
-            'query' => $final_Query
+            'query' => $final_Query,
+//                'facets'=> $facet
         );
+
         $query_results  = $es->search($params);
+
     }
 
 
@@ -87,38 +122,36 @@ if( true )
         echo(" No matching results ");
     }
 
-}
-
-?>
-
-<?php
 if(isset($results)){
- ?>
-    <div class="results" style=" width: 85% ;height:100px ; padding-left: 0px; padding-top:0;float: left;" >
- <?php
-    foreach($results as $r){
+
+    $show_per_page = 10;
+    $total_pages = ceil(count($results)/$show_per_page);
+
+    $start = $_GET['start'];
+    $offset = 10;
+
+    $outArray = array_slice($results, $start, $offset);
+    foreach($outArray as $r){
 ?>
 
-        <div class="inner" style="height: 200px ;width: 200px ;float:left; padding-top: 20px
+<div class="inner" style="height: 200px ;width: 200px ;float:left; padding-top: 20px
                     ;padding-left: 20px; padding-bottom: 60px; ">
 
-               <div class="image-div">
-                <img src = "<?php echo  $r['_source']['image'] ?> "/>
-                </div>
-                <div class="Offer"><?php echo $r['_source']['offer'] ; ?></div>
-                <div>
-                <a href="GetProduct_Details.php?id=<?php echo $r['_source']['model_id'];
-                ?>"><?php echo $r['_source']['model']; ?></a>
-                </div>
-            </div>
-
-<?php
-
-    }
-
-?>
- </div>
-<?php
-}
-?>
+        <div class="image-div">
+            <img src = "<?php echo  $r['_source']['image'] ?> "/>
+        </div>
+        <div class="Offer"><?php echo $r['_source']['offer'] ; ?></div>
+<div>
+    <a href="GetProduct_Details.php?id=<?php echo $r['_source']['model_id'];
+    ?>"><?php echo $r['_source']['model']; ?></a>
 </div>
+
+</div>
+
+<?php
+    }
+}
+}
+ ?>
+</div>
+
